@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="197.0" prefWidth="627.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="notebook.SearchWinController">
+   <children>
+      <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="37.0" layoutY="30.0" mnemonicParsing="true" text="查找内容(_N):">
+         <graphic>
+            <TextField fx:id="searchText" alignment="CENTER_LEFT" prefHeight="30.0" prefWidth="264.0" />
+         </graphic>
+      </Label>
+      <CheckBox fx:id="isCaseSensitiveSet" layoutX="29.0" layoutY="116.0" text="区分大小写(_C)" />
+      <CheckBox fx:id="isRepeatSet" layoutX="29.0" layoutY="149.0" text="循环(_R)" />
+      <RadioButton fx:id="UpwardSet" layoutX="271.0" layoutY="94.0" text="向上(_U)">
+         <toggleGroup>
+            <ToggleGroup fx:id="Direction" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="DownwardSet" layoutX="355.0" layoutY="95.0" selected="true" text="向下(_D)" toggleGroup="$Direction" />
+      <Button fx:id="SearchBtn" layoutX="480.0" layoutY="30.0" onAction="#SearchNext" text="查找下一个(_F)" />
+      <Button layoutX="480.0" layoutY="75.0" mnemonicParsing="false" onAction="#Cancle" prefHeight="30.0" prefWidth="120.0" text="取消" />
+      <Label layoutX="271.0" layoutY="70.0" text="方向:" />
+   </children>
+</AnchorPane>
