@@ -10,15 +10,14 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.swing.filechooser.FileSystemView;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
@@ -28,14 +27,17 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 public class MainWinController {
 	// 全局
@@ -46,8 +48,20 @@ public class MainWinController {
 	}
 
 	private String path = null;// 文档地址
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
 	@FXML
 	public TextArea textArea;// 文字区域
+
+	@FXML
+	private BorderPane pane;
+	@FXML
+	private MenuBar menuBar;
+	@FXML
+	private HBox stageBar;// 状态栏
 	@FXML
 	private Label RowColCountLabel;// 行列计数
 	@FXML
@@ -62,46 +76,92 @@ public class MainWinController {
 	@FXML
 	private ReplaceWinController replaceWin;
 
+	@FXML
+	private GotoWinController gotoWin;
+
+	@FXML
+	private FontSelectWinController fontSelectWin;
+
+//	private boolean isCtrlHold = false;
+
 	// 初始化
-	public void initialize() {
+	public void initialize() throws Exception {
 		// 检测输入框变化event
-		textArea.textProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(final ObservableValue<? extends String> observable, final String oldValue,
-					final String newValue) {
-				TextAreaUpdate();
+		textArea.textProperty().addListener((observable, oldValue, newValue) -> TextAreaUpdate());
+
+		// 焦点放在TextArea上时按F3和F5是无响应的 所以增加此函数
+		textArea.setOnKeyPressed(event -> {
+//			System.out.println(event.getCode());
+			if (event.getCode() == KeyCode.F3 && !SearchNextBtn.isDisable()) {
+				SearchNext();
+			} else if (event.getCode() == KeyCode.F5) {
+				DateTime();
+			} else if (event.isControlDown()) {
+//				isCtrlHold = true;
+			} else if (event.getCode() == KeyCode.ALT) {
+				menuBar.requestFocus();
 			}
 		});
 
-		// 焦点放在TextArea上时按F3和F5是无响应的 所以增加此函数
-		textArea.setOnKeyPressed(new EventHandler<KeyEvent>() {
-			@Override
-			public void handle(KeyEvent event) {
-				if (event.getCode() == KeyCode.F3 && !SearchNextBtn.isDisable()) {
-					SearchNext();
-				} else if (event.getCode() == KeyCode.F5) {
-					DateTime();
-				}
+		// 鼠标滚轮
+		// 只要我不做 就没有BUG
+//		textArea.setOnKeyReleased(event -> {
+//			if (event.getCode() == KeyCode.CONTROL)
+//				isCtrlHold = false;
+//		});
+//
+//		
+//		textArea.scrollTopProperty().addListener((observable, oldValue, newValue) -> {
+//			if (isCtrlHold) {
+//				// textArea.setScrollTop(oldValue.doubleValue());
+//			}
+//		});
+//
+//		pane.setOnScroll(event -> {
+//			System.out.println(event.isControlDown());
+//			if (event.isControlDown()) {
+//				if (event.getDeltaY() > 0) {
+//					ZoomIn();
+//				} else {
+//					ZoomOut();
+//				}
+//				event.consume();
+//			}
+//		});
+
+		// anchor位置变化
+		textArea.caretPositionProperty().addListener((observable, oldValue, newValue) -> {
+			List<Integer> charEachRow = java.util.Arrays.asList(textArea.getText().split("\n"))//
+					.stream()//
+					.map(str -> str.length())//
+					.collect(Collectors.toList());
+			currRow = 0;
+			currCol = (int) newValue;
+			for (int charInRow : charEachRow) {
+				if (currCol - charInRow > 0) {
+					currCol -= charInRow + 1;// magic number
+					++currRow;
+				} else
+					break;
 			}
+			++currRow;
+			++currCol;
+			RowColCountLabel.setText("第 " + currRow + " 行, 第 " + currCol + " 列");
 		});
 
 		Platform.runLater(() -> {
 			// 窗口关闭event
-			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-				@Override
-				public void handle(WindowEvent event) {
-					Exit();
-					event.consume();
-				}
+			stage.setOnCloseRequest(event -> {
+				Exit();
+				event.consume();
 			});
-			
+
 			// 窗口最小化event
-			stage.iconifiedProperty().addListener(new ChangeListener<Boolean>() {
-			    @Override
-			    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-			       searchWin.Minimize(newValue);
-			       replaceWin.Minimize(newValue);
-			    }
+			stage.iconifiedProperty().addListener((observable, oldValue, newValue) -> {
+				searchWin.Minimize(newValue);
+				replaceWin.Minimize(newValue);
+				gotoWin.Minimize(newValue);
+				fontSelectWin.Minimize(newValue);
 			});
 		});
 
@@ -117,11 +177,12 @@ public class MainWinController {
 			searchStage.setTitle("查找");
 			searchStage.setScene(scene);
 			searchStage.setAlwaysOnTop(true);
-
 			searchStage.setResizable(false);
+
 			searchWin = fxmlLoader.getController();
 			searchWin.setStage(searchStage);
 			searchWin.setParentWin(this);
+
 		} catch (IOException e) {
 		}
 
@@ -137,16 +198,66 @@ public class MainWinController {
 			replaceStage.setTitle("替换");
 			replaceStage.setScene(scene);
 			replaceStage.setAlwaysOnTop(true);
-
 			replaceStage.setResizable(false);
+
 			replaceWin = fxmlLoader.getController();
 			replaceWin.setStage(replaceStage);
 			replaceWin.setParentWin(this);
 		} catch (IOException e) {
-
 		}
+
+		// 初始化跳转窗口
+		try {
+			FXMLLoader fxmlLoader = new FXMLLoader();
+			fxmlLoader.setLocation(getClass().getResource("GotoWin.fxml"));
+			fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
+			Parent root = fxmlLoader.load();
+
+			Stage gotoStage = new Stage();
+			Scene scene = new Scene(root);
+			gotoStage.setTitle("转到指定行");
+			gotoStage.setScene(scene);
+			gotoStage.setAlwaysOnTop(true);
+			gotoStage.setResizable(false);
+
+			gotoWin = fxmlLoader.getController();
+			gotoWin.setStage(gotoStage);
+			gotoWin.setParentWin(this);
+		} catch (IOException e) {
+		}
+
+		// 初始化字体选择窗口
+		try {
+			FXMLLoader fxmlLoader = new FXMLLoader();
+			fxmlLoader.setLocation(getClass().getResource("fontSelectWin.fxml"));
+			fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
+			Parent root = fxmlLoader.load();
+
+			Stage fontSelectStage = new Stage();
+			Scene scene = new Scene(root);
+			fontSelectStage.setTitle("字体");
+			fontSelectStage.setScene(scene);
+			fontSelectStage.setAlwaysOnTop(true);
+			fontSelectStage.setResizable(false);
+
+			fontSelectWin = fxmlLoader.getController();
+			fontSelectWin.setStage(fontSelectStage);
+			fontSelectWin.setParentWin(this);
+		} catch (IOException e) {
+		}
+
+		// 初始化状态栏
+		RowColCountLabel.setText("第 1 行, 第 1 列");
+		ZoomSizeShowLabel.setText("100%");
+
+		// 初始化字体
+		Platform.runLater(() -> {
+			font = textArea.getFont();
+		});
+	}
+
+	public void load() {
 		// 试图打开文件
-		path = NoteBook.args;
 		if (path != null) {// 路径不为空 打开文件
 			if (!new File(path).exists()) {// 路径不为空却无效 选择是否创建文件
 				if (!path.contains(".")) {
@@ -213,7 +324,8 @@ public class MainWinController {
 
 	private void DirectBlankFile() {
 		path = null;
-		textArea.setText(null);
+		RefreshTitle();
+		textArea.setText("");
 		textArea.requestFocus();
 		hasSave = true;
 	}
@@ -330,7 +442,8 @@ public class MainWinController {
 	@FXML
 	private void Exit() {// 退出
 		if (hasSave) {// 已保存直接退出
-			System.exit(0);
+			stage.hide();// 好像当所有窗口都hide的时候进程会自动关闭
+			// 故不用担心所有窗口关闭后仍占用资源
 		} else {
 			// 弹出窗口
 			ButtonData result = isSaveAlert();
@@ -347,7 +460,7 @@ public class MainWinController {
 			} else {// 取消
 				return;
 			}
-			System.exit(0);
+			stage.hide();
 		}
 	}
 
@@ -490,7 +603,7 @@ public class MainWinController {
 
 	@FXML
 	private void Goto() {// 转到
-
+		gotoWin.Show();
 	}
 
 	@FXML
@@ -506,34 +619,55 @@ public class MainWinController {
 
 	// 格式(O)
 	@FXML
-	private void AutoLineFeed() {// 自动换行
-
-	}
+	private CheckMenuItem AutoLineFeedBtn;
 
 	@FXML
-	private void Font() {// 字体
+	private CheckMenuItem StageBarBtn;
 
+	@FXML
+	private void AutoLineFeed() {// 自动换行
+		textArea.setWrapText(AutoLineFeedBtn.isSelected());
+	}
+
+	public Font font;
+
+	int ZoomSize = 100;
+
+	@FXML
+	private void SelectFont() {// 字体
+		fontSelectWin.Show();
+	}
+
+	public void RefreshFont() {
+		textArea.setFont(Font.font(font.getName(), font.getSize() * (ZoomSize / 100.0)));
+//		System.out.println(textArea.getFont());
+		ZoomSizeShowLabel.setText("" + ZoomSize + "%");
 	}
 
 	// 查看(V)
 	@FXML
 	private void ZoomIn() {// 放大
-
+		if (ZoomSize < 500)
+			ZoomSize += 10;
+		RefreshFont();
 	}
 
 	@FXML
 	private void ZoomOut() {// 缩小
-
+		if (ZoomSize > 10)
+			ZoomSize -= 10;
+		RefreshFont();
 	}
 
 	@FXML
 	private void DefaultZoom() {// 恢复默认缩放
-
+		ZoomSize = 100;
+		RefreshFont();
 	}
 
 	@FXML
 	private void StageBar() {// 状态栏
-
+		pane.setBottom(StageBarBtn.isSelected() ? stageBar : null);
 	}
 
 	// 帮助(H)
@@ -551,12 +685,22 @@ public class MainWinController {
 
 	@FXML
 	private void About() {// 关于记事本
-
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("关于");
+		alert.setHeaderText("Java大作业 By Hardworking_qf");
+		alert.setContentText("JavaFX真难用");
+		alert.showAndWait();
 	}
 
 	// 其它功能
+	private int tolCount = 0;// 字数统计
+	public int currRow = 1;// 行位置
+	private int currCol = 1;// 列位置
+
 	@FXML
 	private void TextAreaUpdate() {
+		tolCount = textArea.getText().length();
 		hasSave = false;
+		LetterCountLabel.setText(tolCount + " 字");
 	}
 }

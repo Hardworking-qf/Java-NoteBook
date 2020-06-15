@@ -2,21 +2,14 @@ package notebook;
 
 import java.util.Locale;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
-import javafx.stage.Stage;
 
-public class ReplaceWinController {
-	private MainWinController parentWin;
-
-	private Stage stage;
-
+public class ReplaceWinController extends SecondWinController {
 	@FXML
 	private TextField searchText;
 
@@ -38,55 +31,35 @@ public class ReplaceWinController {
 	@FXML
 	private Button ReplaceAllBtn;
 
-	public void setParentWin(MainWinController parentWin) {
-		this.parentWin = parentWin;
-	}
-
-	public void setStage(Stage stage) {
-		this.stage = stage;
-	}
-
 	public void initialize() {
 		// 检测输入框变化event
-		searchText.textProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(final ObservableValue<? extends String> observable, final String oldValue,
-					final String newValue) {
-				parentWin.SearchText = searchText.getText();
-				SearchBtn.setDisable(parentWin.SearchText.length() == 0);
-				ReplaceBtn.setDisable(parentWin.SearchText.length() == 0);
-				ReplaceAllBtn.setDisable(parentWin.SearchText.length() == 0);
-			}
+		searchText.textProperty().addListener((observable, oldValue, newValue) -> {
+			parentWin.SearchText = searchText.getText();
+			SearchBtn.setDisable(parentWin.SearchText.length() == 0);
+			ReplaceBtn.setDisable(parentWin.SearchText.length() == 0);
+			ReplaceAllBtn.setDisable(parentWin.SearchText.length() == 0);
+
 		});
 
-		replaceText.textProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(final ObservableValue<? extends String> observable, final String oldValue,
-					final String newValue) {
-				parentWin.ReplaceText = replaceText.getText();
-				SearchBtn.setDisable(parentWin.SearchText.length() == 0);
-				ReplaceBtn.setDisable(parentWin.SearchText.length() == 0);
-				ReplaceAllBtn.setDisable(parentWin.SearchText.length() == 0);
-			}
+		replaceText.textProperty().addListener((observable, oldValue, newValue) -> {
+			parentWin.ReplaceText = replaceText.getText();
+			SearchBtn.setDisable(parentWin.SearchText.length() == 0);
+			ReplaceBtn.setDisable(parentWin.SearchText.length() == 0);
+			ReplaceAllBtn.setDisable(parentWin.SearchText.length() == 0);
 		});
 
 		// 检测大小写变化event
-		isCaseSensitiveSet.selectedProperty().addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				parentWin.isCaseSensitive = isCaseSensitiveSet.isSelected();
-			}
+		isCaseSensitiveSet.selectedProperty().addListener((observable, oldValue, newValue) -> {
+			parentWin.isCaseSensitive = isCaseSensitiveSet.isSelected();
 		});
 
 		// 检测重复变化event
-		isRepeatSet.selectedProperty().addListener(new ChangeListener<Boolean>() {
-			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-				parentWin.isRepeat = isRepeatSet.isSelected();
-			}
+		isRepeatSet.selectedProperty().addListener((observable, oldValue, newValue) -> {
+			parentWin.isRepeat = isRepeatSet.isSelected();
 		});
 	}
 
+	@Override
 	public void Show() {
 		searchText.setText(parentWin.SearchText);
 		isCaseSensitiveSet.setSelected(parentWin.isCaseSensitive);
@@ -98,20 +71,13 @@ public class ReplaceWinController {
 		stage.show();
 	}
 
+	@Override
 	public void Hide() {
 		stage.hide();
 	}
 
-	public void Minimize(boolean isMinimize) {
-		stage.setIconified(isMinimize);
-	}
-
-	public void setOnTop(boolean isOnTop) {
-		stage.setAlwaysOnTop(isOnTop);
-	}
-
 	@FXML
-	public void SearchNext() {// 只向下查找
+	private void SearchNext() {// 只向下查找
 		int SearchResult;
 		String allText = parentWin.textArea.getText();
 		String tarText = parentWin.SearchText;
@@ -137,7 +103,7 @@ public class ReplaceWinController {
 	}
 
 	@FXML
-	public void Replace() {
+	private void Replace() {
 		if (parentWin.textArea.getSelectedText().equals(parentWin.SearchText)) {// 选择的文字与查找的文字相同
 			parentWin.textArea.deletePreviousChar();
 			parentWin.textArea.insertText(parentWin.textArea.getAnchor(), parentWin.ReplaceText);
@@ -146,12 +112,12 @@ public class ReplaceWinController {
 	}
 
 	@FXML
-	public void ReplaceAll() {
+	private void ReplaceAll() {
 		parentWin.textArea.setText(parentWin.textArea.getText().replace(parentWin.SearchText, parentWin.ReplaceText));
 	}
 
 	@FXML
-	public void Cancle() {
+	private void Cancel() {
 		Hide();
 	}
 }

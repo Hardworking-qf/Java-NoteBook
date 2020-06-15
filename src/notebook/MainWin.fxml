@@ -6,9 +6,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="notebook.MainWinController">
+<BorderPane fx:id="pane" prefHeight="517.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="notebook.MainWinController">
 	<top>
-		<MenuBar BorderPane.alignment="CENTER">
+		<MenuBar fx:id="menuBar" BorderPane.alignment="CENTER">
 			<menus>
 				<Menu mnemonicParsing="true" text="文件(_F)">
 					<items>
@@ -109,8 +109,8 @@
 				</Menu>
 				<Menu mnemonicParsing="true" text="格式(_O)">
                <items>
-                  <CheckMenuItem onAction="#AutoLineFeed" text="自动换行(_W)" />
-                  <MenuItem onAction="#Font" text="字体(_F)..." />
+                  <CheckMenuItem fx:id="AutoLineFeedBtn" onAction="#AutoLineFeed" text="自动换行(_W)" />
+                  <MenuItem onAction="#SelectFont" text="字体(_F)..." />
                </items>
 				</Menu>
 				<Menu mnemonicParsing="true" text="查看(_V)">
@@ -119,12 +119,12 @@
                      <items>
                         <MenuItem mnemonicParsing="false" onAction="#ZoomIn" text="放大">
                            <accelerator>
-                              <KeyCodeCombination alt="UP" code="PLUS" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                              <KeyCodeCombination alt="UP" code="ADD" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
                         <MenuItem mnemonicParsing="false" onAction="#ZoomOut" text="缩小">
                            <accelerator>
-                              <KeyCodeCombination alt="UP" code="MINUS" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                              <KeyCodeCombination alt="UP" code="SUBTRACT" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
                         <MenuItem mnemonicParsing="false" onAction="#DefaultZoom" text="恢复默认缩放">
@@ -133,7 +133,7 @@
                            </accelerator>
                         </MenuItem>
                      </items></Menu>
-                  <CheckMenuItem text="状态栏(_S)" />
+                  <CheckMenuItem fx:id="StageBarBtn" onAction="#StageBar" selected="true" text="状态栏(_S)" />
 					</items>
 				</Menu>
 				<Menu mnemonicParsing="true" text="帮助(_H)">
@@ -146,18 +146,18 @@
 			</menus>
 		</MenuBar>
 	</top>
-	<center>
-		<TextArea fx:id="textArea" prefHeight="200.0" prefWidth="850.0" BorderPane.alignment="CENTER" />
-	</center>
    <bottom>
-      <HBox alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="405.0" BorderPane.alignment="CENTER">
+      <HBox fx:id="stageBar" alignment="CENTER_RIGHT" prefHeight="27.0" prefWidth="405.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="LetterCountLabel" prefHeight="20.0" prefWidth="78.0" />
+            <Label fx:id="LetterCountLabel" prefHeight="20.0" prefWidth="114.0" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <Label fx:id="RowColCountLabel" prefHeight="20.0" prefWidth="85.0" />
+            <Label fx:id="RowColCountLabel" prefHeight="20.0" prefWidth="120.0" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <Label fx:id="ZoomSizeShowLabel" prefHeight="20.0" prefWidth="91.0" />
+            <Label fx:id="ZoomSizeShowLabel" prefHeight="20.0" prefWidth="123.0" />
          </children>
       </HBox>
    </bottom>
+   <center>
+		<TextArea fx:id="textArea" prefHeight="200.0" prefWidth="850.0" BorderPane.alignment="CENTER" />
+   </center>
 </BorderPane>

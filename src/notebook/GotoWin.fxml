@@ -5,15 +5,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
-<AnchorPane prefHeight="150.0" prefWidth="321.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+<AnchorPane prefHeight="150.0" prefWidth="321.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="notebook.GotoWinController">
    <children>
       <Label alignment="CENTER_RIGHT" contentDisplay="BOTTOM" layoutX="26.0" layoutY="23.0" text="行号(L):" />
-      <Button layoutX="105.0" layoutY="94.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="转到" />
-      <Button layoutX="205.0" layoutY="94.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="90.0" text="取消" />
+      <Button layoutX="105.0" layoutY="94.0" mnemonicParsing="false" onAction="#Goto" prefHeight="30.0" prefWidth="90.0" text="转到" />
+      <Button layoutX="205.0" layoutY="94.0" mnemonicParsing="false" onAction="#Cancel" prefHeight="30.0" prefWidth="90.0" text="取消" />
       <Label alignment="CENTER_RIGHT" contentDisplay="GRAPHIC_ONLY" layoutX="26.0" layoutY="51.0" mnemonicParsing="true" prefHeight="30.0" prefWidth="269.0" text="_L">
          <graphic>
-            <TextField alignment="CENTER_RIGHT" prefHeight="30.0" prefWidth="264.0" />
+            <TextField fx:id="rowIndexInput" alignment="CENTER_LEFT" prefHeight="30.0" prefWidth="264.0" />
          </graphic>
       </Label>
    </children>

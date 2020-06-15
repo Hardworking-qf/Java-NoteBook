@@ -21,7 +21,7 @@
       </RadioButton>
       <RadioButton fx:id="DownwardSet" layoutX="355.0" layoutY="95.0" selected="true" text="向下(_D)" toggleGroup="$Direction" />
       <Button fx:id="SearchBtn" layoutX="480.0" layoutY="30.0" onAction="#SearchNext" text="查找下一个(_F)" />
-      <Button layoutX="480.0" layoutY="75.0" mnemonicParsing="false" onAction="#Cancle" prefHeight="30.0" prefWidth="120.0" text="取消" />
+      <Button layoutX="480.0" layoutY="75.0" mnemonicParsing="false" onAction="#Cancel" prefHeight="30.0" prefWidth="120.0" text="取消" />
       <Label layoutX="271.0" layoutY="70.0" text="方向:" />
    </children>
 </AnchorPane>
